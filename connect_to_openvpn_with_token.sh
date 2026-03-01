@@ -228,6 +228,14 @@ To disconnect the VPN, run:
 --> ${green}sudo kill $ovpn_pid${nc} <--
 "
 
+# Write server details to connection info file
+CONNECTION_INFO_FILE="${CONNECTION_INFO_FILE:-/opt/piavpn-manual/connection_info}"
+{
+  echo "SERVER_IP=$OVPN_SERVER_IP"
+  echo "SERVER_HOSTNAME=$OVPN_HOSTNAME"
+  echo "GATEWAY_IP=$gateway_ip"
+} >> "$CONNECTION_INFO_FILE"
+
 # This section will stop the script if PIA_PF is not set to "true".
 if [[ $PIA_PF != "true" ]]; then
   echo "If you want to also enable port forwarding, you can start the script:"
@@ -260,4 +268,5 @@ $ ${green}PIA_TOKEN=$PIA_TOKEN \\
 PIA_TOKEN=$PIA_TOKEN \
   PF_GATEWAY=$gateway_ip \
   PF_HOSTNAME=$OVPN_HOSTNAME \
+  CONNECTION_INFO_FILE=$CONNECTION_INFO_FILE \
   ./port_forwarding.sh

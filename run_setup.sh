@@ -461,6 +461,15 @@ echo -e "${green}PIA_DNS=$PIA_DNS${nc}"
 CONNECTION_READY="true"
 export CONNECTION_READY
 
+# Write connection info for use by other scripts
+CONNECTION_INFO_FILE="${CONNECTION_INFO_FILE:-/opt/piavpn-manual/connection_info}"
+export CONNECTION_INFO_FILE
+{
+  echo "VPN_PROTOCOL=$VPN_PROTOCOL"
+  echo "PIA_PF=$PIA_PF"
+  echo "PIA_DNS=$PIA_DNS"
+} > "$CONNECTION_INFO_FILE"
+
 if [[ -z $DIP_TOKEN ]]; then
   ./get_region.sh
 elif [[ $VPN_PROTOCOL == wireguard ]]; then
@@ -473,8 +482,13 @@ elif [[ $VPN_PROTOCOL == wireguard ]]; then
   echo "WG_SERVER_IP=$dipAddress WG_HOSTNAME=$dipHostname" \\
   echo -e "./connect_to_wireguard_with_token.sh${nc}"
   echo
+  {
+    echo "SERVER_IP=$dipAddress"
+    echo "SERVER_HOSTNAME=$dipHostname"
+  } >> "$CONNECTION_INFO_FILE"
   PIA_PF=$PIA_PF PIA_TOKEN=$PIA_TOKEN DIP_TOKEN=$DIP_TOKEN \
     WG_SERVER_IP=$dipAddress WG_HOSTNAME=$dipHostname \
+    CONNECTION_INFO_FILE=$CONNECTION_INFO_FILE \
     ./connect_to_wireguard_with_token.sh
   rm -f /opt/piavpn-manual/latencyList
   exit 0
@@ -489,10 +503,15 @@ elif [[ $VPN_PROTOCOL == openvpn* ]]; then
   echo   "CONNECTION_SETTINGS=$VPN_PROTOCOL" \\
   echo -e "./connect_to_openvpn_with_token.sh${nc}"
   echo
+  {
+    echo "SERVER_IP=$dipAddress"
+    echo "SERVER_HOSTNAME=$dipHostname"
+  } >> "$CONNECTION_INFO_FILE"
   PIA_PF=$PIA_PF PIA_TOKEN=$PIA_TOKEN \
     DIP_TOKEN=$DIP_TOKEN OVPN_SERVER_IP=$dipAddress \
     OVPN_HOSTNAME=$dipHostname \
     CONNECTION_SETTINGS=$VPN_PROTOCOL \
+    CONNECTION_INFO_FILE=$CONNECTION_INFO_FILE \
     ./connect_to_openvpn_with_token.sh
   rm -f /opt/piavpn-manual/latencyList
   exit 0

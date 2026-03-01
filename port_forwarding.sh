@@ -118,6 +118,13 @@ port=$(echo "$payload" | base64 -d | jq -r '.port')
 # 2 months is not enough for your setup, please open a ticket.
 expires_at=$(echo "$payload" | base64 -d | jq -r '.expires_at')
 
+# Write port forwarding info for use by other scripts
+CONNECTION_INFO_FILE="${CONNECTION_INFO_FILE:-/opt/piavpn-manual/connection_info}"
+{
+  echo "PF_PORT=$port"
+  echo "PF_EXPIRES=$expires_at"
+} >> "$CONNECTION_INFO_FILE"
+
 echo -ne "
 Signature ${green}$signature${nc}
 Payload   ${green}$payload${nc}

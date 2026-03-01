@@ -183,6 +183,14 @@ if [[ $PIA_CONNECT == "true" ]]; then
   --> ${green}wg-quick down pia${nc} <--
   "
 
+  # Write server details to connection info file
+  CONNECTION_INFO_FILE="${CONNECTION_INFO_FILE:-/opt/piavpn-manual/connection_info}"
+  {
+    echo "SERVER_IP=$WG_SERVER_IP"
+    echo "SERVER_HOSTNAME=$WG_HOSTNAME"
+    echo "GATEWAY_IP=$WG_SERVER_IP"
+  } >> "$CONNECTION_INFO_FILE"
+
   # This section will stop the script if PIA_PF is not set to "true".
   if [[ $PIA_PF != "true" ]]; then
     echo "If you want to also enable port forwarding, you can start the script:"
@@ -215,5 +223,6 @@ if [[ $PIA_CONNECT == "true" ]]; then
   PIA_TOKEN=$PIA_TOKEN \
     PF_GATEWAY=$WG_SERVER_IP \
     PF_HOSTNAME=$WG_HOSTNAME \
+    CONNECTION_INFO_FILE=$CONNECTION_INFO_FILE \
     ./port_forwarding.sh
 fi

@@ -191,6 +191,14 @@ bestServer_OT_hostname=$(echo "$regionData" | jq -r '.servers.ovpntcp[0].cn')
 bestServer_OU_IP=$(echo "$regionData" | jq -r '.servers.ovpnudp[0].ip')
 bestServer_OU_hostname=$(echo "$regionData" | jq -r '.servers.ovpnudp[0].cn')
 
+# Write resolved region details to connection info file
+CONNECTION_INFO_FILE="${CONNECTION_INFO_FILE:-/opt/piavpn-manual/connection_info}"
+if [[ $VPN_PROTOCOL != "no" ]]; then
+  {
+    echo "REGION=$selectedRegion"
+    echo "REGION_NAME=$(echo "$regionData" | jq -r '.name')"
+  } >> "$CONNECTION_INFO_FILE"
+fi
 
 if [[ $VPN_PROTOCOL == "no" ]]; then
   echo -ne "The $selectedOrLowestLatency region is ${green}$(echo "$regionData" | jq -r '.name')${nc}"
@@ -241,7 +249,9 @@ if [[ $VPN_PROTOCOL == "wireguard" ]]; then
   echo -e "PIA_PF=$PIA_PF ./connect_to_wireguard_with_token.sh${nc}"
   echo
   PIA_PF=$PIA_PF PIA_TOKEN=$PIA_TOKEN WG_SERVER_IP=$bestServer_WG_IP \
-    WG_HOSTNAME=$bestServer_WG_hostname ./connect_to_wireguard_with_token.sh
+    WG_HOSTNAME=$bestServer_WG_hostname \
+    CONNECTION_INFO_FILE=$CONNECTION_INFO_FILE \
+    ./connect_to_wireguard_with_token.sh
   rm -f /opt/piavpn-manual/latencyList
   exit 0
 fi
@@ -267,6 +277,7 @@ if [[ $VPN_PROTOCOL == openvpn* ]]; then
     OVPN_SERVER_IP=$serverIP \
     OVPN_HOSTNAME=$serverHostname \
     CONNECTION_SETTINGS=$VPN_PROTOCOL \
+    CONNECTION_INFO_FILE=$CONNECTION_INFO_FILE \
     ./connect_to_openvpn_with_token.sh
   rm -f /opt/piavpn-manual/latencyList
   exit 0
